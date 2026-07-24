@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poise RPG - Preenchedor de Planilhas</title>
+    <!-- Google Fonts: Outfit for UI, Kalam/Caveat for sheet handwriting -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Outfit:wght@300;400;600;800&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Controls -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <img src="poise_logo_.png" alt="POISE RPG Logo" class="app-logo">
+                <span class="logo-subtitle">Planilha Interativa</span>
+            </div>
+
+            <!-- Mode Switcher -->
+            <div class="mode-switcher">
+                <button id="btn-play-mode" class="mode-btn active" title="Preencher planilha">
+                    <svg viewBox="0 0 24 24" class="icon"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    Modo Jogador
+                </button>
+                <button id="btn-edit-mode" class="mode-btn" title="Editar campos (Criador)">
+                    <svg viewBox="0 0 24 24" class="icon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    Modo Designer
+                </button>
+            </div>
+
+            <!-- File Actions Group -->
+            <div class="control-group">
+                <h3>Arquivo</h3>
+                <div class="action-grid">
+                    <button id="btn-load-poise" class="action-btn" title="Carregar arquivo .poise">
+                        <svg viewBox="0 0 24 24" class="icon"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                        Carregar Ficha
+                    </button>
+                    <button id="btn-save-poise" class="action-btn primary" title="Salvar ficha (.poise)">
+                        <svg viewBox="0 0 24 24" class="icon"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        Salvar Ficha
+                    </button>
+                    <button id="btn-print-pdf" class="action-btn" title="Imprimir ou exportar PDF">
+                        <svg viewBox="0 0 24 24" class="icon"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                        Exportar PDF
+                    </button>
+                    <button id="btn-clear-values" class="action-btn danger" title="Limpar dados digitados">
+                        <svg viewBox="0 0 24 24" class="icon"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                        Limpar Dados
+                    </button>
+                </div>
+            </div>
+
+            <!-- Image & Template Loader -->
+            <div class="control-group">
+                <h3>Planilha de Fundo</h3>
+                <div class="action-grid full-width">
+                    <button id="btn-upload-png" class="action-btn secondary">
+                        Carregar Imagem PNG
+                    </button>
+                </div>
+                <input type="file" id="file-png-input" accept="image/png, image/jpeg" style="display: none;">
+                <input type="file" id="file-poise-input" accept=".poise, .json" style="display: none;">
+            </div>
+
+            <!-- Editor Settings (Visible in Edit Mode only) -->
+            <div id="editor-controls" class="control-group hidden">
+                <h3>Ferramentas de Design</h3>
+                <div class="designer-toolset">
+                    <button id="btn-add-text" class="tool-btn">
+                        <span>+ Texto</span>
+                    </button>
+                    <button id="btn-add-textarea" class="tool-btn">
+                        <span>+ Bloco Texto</span>
+                    </button>
+                    <button id="btn-add-checkbox" class="tool-btn">
+                        <span>+ Bolinha/Check</span>
+                    </button>
+                    <button id="btn-add-bubblegroup" class="tool-btn">
+                        <span>+ Grupo Bolinhas</span>
+                    </button>
+                </div>
+
+                <div class="snap-settings">
+                    <label for="snap-toggle">Ajustar à Grade (Snap)</label>
+                    <input type="checkbox" id="snap-toggle" checked>
+                </div>
+            </div>
+
+            <!-- Selected Field Properties (Visible in Edit Mode when a field is selected) -->
+            <div id="properties-panel" class="control-group hidden">
+                <h3>Propriedades do Campo</h3>
+                <div class="prop-row">
+                    <label for="prop-name">Nome/Rótulo:</label>
+                    <input type="text" id="prop-name">
+                </div>
+                <div class="prop-row">
+                    <label for="prop-type">Tipo:</label>
+                    <select id="prop-type">
+                        <option value="text">Linha de Texto</option>
+                        <option value="number">Número</option>
+                        <option value="textarea">Bloco de Texto</option>
+                        <option value="checkbox">Bolinha Individual</option>
+                        <option value="bubble-group">Grupo de Bolinhas</option>
+                    </select>
+                </div>
+                <div id="bubble-count-row" class="prop-row hidden">
+                    <label for="prop-bubble-count">Qtd. Bolinhas:</label>
+                    <input type="number" id="prop-bubble-count" min="1" max="20" value="6">
+                </div>
+                <div class="prop-row">
+                    <label for="prop-fontsize">Tamanho Fonte:</label>
+                    <input type="number" id="prop-fontsize" min="8" max="72" value="14">
+                </div>
+                <div class="prop-row">
+                    <label for="prop-align">Alinhamento:</label>
+                    <select id="prop-align">
+                        <option value="left">Esquerda</option>
+                        <option value="center">Centralizado</option>
+                        <option value="right">Direita</option>
+                    </select>
+                </div>
+                <div class="prop-row layout-dimensions">
+                    <div>
+                        <label for="prop-x">X (%):</label>
+                        <input type="number" id="prop-x" step="0.1">
+                    </div>
+                    <div>
+                        <label for="prop-y">Y (%):</label>
+                        <input type="number" id="prop-y" step="0.1">
+                    </div>
+                    <div>
+                        <label for="prop-w">L (%):</label>
+                        <input type="number" id="prop-w" step="0.1">
+                    </div>
+                    <div>
+                        <label for="prop-h">A (%):</label>
+                        <input type="number" id="prop-h" step="0.1">
+                    </div>
+                </div>
+                <div class="prop-actions">
+                    <button id="btn-delete-field" class="action-btn danger">Deletar Campo</button>
+                </div>
+            </div>
+
+            <!-- Footer info -->
+            <div class="sidebar-footer">
+                <button id="btn-help" class="text-link">Atalhos e Ajuda</button>
+                <div class="status-autosave" id="autosave-status">Salvo localmente</div>
+            </div>
+        </aside>
+
+        <!-- Canvas Viewport -->
+        <main class="canvas-viewport" id="canvas-viewport">
+            <!-- Zoom overlay panel -->
+            <div class="zoom-panel">
+                <button id="btn-zoom-out" title="Diminuir Zoom">
+                    <svg viewBox="0 0 24 24" class="icon"><path d="M19 13H5v-2h14v2z"/></svg>
+                </button>
+                <span id="zoom-indicator">100%</span>
+                <button id="btn-zoom-in" title="Aumentar Zoom">
+                    <svg viewBox="0 0 24 24" class="icon"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                </button>
+                <div class="divider"></div>
+                <button id="btn-zoom-fit" title="Ajustar à Tela">Ajustar</button>
+                <button id="btn-zoom-actual" title="Tamanho Real (100%)">100%</button>
+            </div>
+
+            <!-- Sheet Wrapper (Scrollable and centerable) -->
+            <div class="sheet-scroller" id="sheet-scroller">
+                <div class="sheet-container" id="sheet-container">
+                    <!-- The Background Sheet Image -->
+                    <img id="sheet-image" src="" alt="Ficha de Personagem">
+                    
+                    <!-- Overlay Canvas for fields -->
+                    <div id="fields-overlay" class="fields-overlay">
+                        <!-- Dynamic fields will be rendered here by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State / Upload Prompt -->
+            <div id="empty-state" class="empty-state">
+                <div class="empty-state-content">
+                    <img src="poise_logo_.png" alt="POISE RPG Logo" class="empty-logo">
+                    <h2>Bem-vindo à Ficha Interativa de Poise</h2>
+                    <p>Para começar, carregue a planilha oficial em formato PNG ou selecione uma ficha salva anteriormente.</p>
+                    <div class="empty-actions">
+                        <button id="btn-empty-upload" class="cta-btn primary">Selecionar PNG Local</button>
+                        <button id="btn-empty-load-file" class="cta-btn secondary">Carregar Ficha (.poise)</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Drag and Drop Full Screen Overlay -->
+    <div id="drag-overlay" class="drag-overlay">
+        <div class="drag-message">
+            <svg viewBox="0 0 24 24" class="drag-icon"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            <h2>Solte a imagem PNG ou o arquivo .poise para carregar</h2>
+        </div>
+    </div>
+
+    <!-- Help Modal Dialog -->
+    <div id="help-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Ficha Interativa - Ajuda & Atalhos</h2>
+            <div class="help-section">
+                <h3>Modo Designer (Edição de Campos)</h3>
+                <ul>
+                    <li><strong>Adicionar Campos:</strong> Use os botões na barra lateral para criar novos inputs.</li>
+                    <li><strong>Mover:</strong> Clique e arraste um campo para reposicioná-lo na planilha.</li>
+                    <li><strong>Redimensionar:</strong> Arraste a alça no canto inferior direito de um campo.</li>
+                    <li><strong>Editar Propriedades:</strong> Clique em um campo no modo de edição para abrir o painel de propriedades na barra lateral.</li>
+                    <li><strong>Navegação Fina (Nudge):</strong> Use as setas do teclado (<code>↑</code>, <code>↓</code>, <code>←</code>, <code>→</code>) para mover o campo selecionado em 0.1% de precisão. Segure <code>Shift</code> para mover 1%.</li>
+                    <li><strong>Deletar:</strong> Selecione um campo e aperte a tecla <code>Delete</code> ou clique em "Deletar Campo".</li>
+                </ul>
+            </div>
+            <div class="help-section">
+                <h3>Geral</h3>
+                <ul>
+                    <li><strong>Exportar para PDF:</strong> O botão "Exportar PDF" abre a caixa de diálogo de impressão do navegador configurada automaticamente para ocultar toda a interface de edição e barra lateral, imprimindo perfeitamente apenas a ficha com seus preenchimentos.</li>
+                    <li><strong>Salvar Ficha (.poise):</strong> Exporta todas as posições dos campos e o texto preenchido. Se você carregou uma imagem customizada, o arquivo incluirá a imagem para que a ficha seja auto-suficiente!</li>
+                </ul>
+            </div>
+            <div class="modal-actions">
+                <button id="btn-close-help" class="cta-btn primary">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script references -->
+    <script src="default_template.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
