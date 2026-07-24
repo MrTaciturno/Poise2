@@ -16,14 +16,14 @@ const GRID_SNAP_SIZE = 0.25; // Snap interval in percentages
 
 // Grid Zones Configuration for Snapping (w and h will be calculated dynamically on image load)
 const gridZones = [
-    { id: "destra", name: "Destra", x: 5.8, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "carga_l", name: "Carga (Esquerda)", x: 23.6, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "traje", name: "Traje", x: 35.2, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "carga_r", name: "Carga (Direita)", x: 58.8, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "sinistra", name: "Sinistra", x: 76.4, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "carga_1", name: "Carga 1", x: 5.8, y: 70.97, w: 47.39, h: 29.3, cols: 5, rows: 4 },
-    { id: "carga_2", name: "Carga 2", x: 35.2, y: 70.97, w: 47.39, h: 29.3, cols: 5, rows: 4 },
-    { id: "carga_3", name: "Carga 3", x: 64.8, y: 70.97, w: 47.39, h: 29.3, cols: 5, rows: 4 }
+    { id: "destra", name: "Destra", x: 5.8, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_l", name: "Carga (Esquerda)", x: 23.6, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "traje", name: "Traje", x: 35.2, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_r", name: "Carga (Direita)", x: 58.8, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "sinistra", name: "Sinistra", x: 76.4, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_1", name: "Carga 1", x: 5.8, y: 71.34, w: 47.39, h: 29.3, cols: 5, rows: 4 },
+    { id: "carga_2", name: "Carga 2", x: 35.2, y: 71.34, w: 47.39, h: 29.3, cols: 5, rows: 4 },
+    { id: "carga_3", name: "Carga 3", x: 64.8, y: 71.34, w: 47.39, h: 29.3, cols: 5, rows: 4 }
 ];
 
 let SHEET_RATIO = 0.707; // Default aspect ratio of A4 sheet (2480 / 3508)
