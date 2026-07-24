@@ -123,14 +123,14 @@ const defaultTemplate = [
   { id: "total_exp_box", name: "Total EXP", type: "text", x: 64.8, y: 50.8, w: 29.4, h: 1.8, fontSize: 14, align: "center", value: "" },
 
   // Equipamentos (5 Columns)
-  { id: "eq_destra", name: "Equipamento: Destra", type: "textarea", x: 5.8, y: 54.8, w: 17.8, h: 16.4, fontSize: 13, align: "left", value: "" },
-  { id: "eq_carga1", name: "Equipamento: Carga 1", type: "textarea", x: 23.6, y: 54.8, w: 11.6, h: 16.4, fontSize: 13, align: "left", value: "" },
-  { id: "eq_traje", name: "Equipamento: Traje", type: "textarea", x: 35.2, y: 54.8, w: 23.6, h: 16.4, fontSize: 13, align: "left", value: "" },
-  { id: "eq_carga2", name: "Equipamento: Carga 2", type: "textarea", x: 58.8, y: 54.8, w: 17.6, h: 16.4, fontSize: 13, align: "left", value: "" },
-  { id: "eq_sinistra", name: "Equipamento: Sinistra", type: "textarea", x: 76.4, y: 54.8, w: 17.8, h: 16.4, fontSize: 13, align: "left", value: "" },
+  { id: "eq_destra", name: "Equipamento: Destra", type: "textarea", x: 5.8, y: 52.97, w: 28.44, h: 29.3, fontSize: 13, align: "left", value: "" },
+  { id: "eq_carga1", name: "Equipamento: Carga 1", type: "textarea", x: 23.6, y: 52.97, w: 28.44, h: 29.3, fontSize: 13, align: "left", value: "" },
+  { id: "eq_traje", name: "Equipamento: Traje", type: "textarea", x: 35.2, y: 52.97, w: 28.44, h: 29.3, fontSize: 13, align: "left", value: "" },
+  { id: "eq_carga2", name: "Equipamento: Carga 2", type: "textarea", x: 58.8, y: 52.97, w: 28.44, h: 29.3, fontSize: 13, align: "left", value: "" },
+  { id: "eq_sinistra", name: "Equipamento: Sinistra", type: "textarea", x: 76.4, y: 52.97, w: 28.44, h: 29.3, fontSize: 13, align: "left", value: "" },
 
   // Inventário (3 Columns)
-  { id: "inv_carga1", name: "Inventário: Carga 1", type: "textarea", x: 5.8, y: 72.8, w: 29.4, h: 15.6, fontSize: 13, align: "left", value: "" },
-  { id: "inv_carga2", name: "Inventário: Carga 2", type: "textarea", x: 35.2, y: 72.8, w: 29.6, h: 15.6, fontSize: 13, align: "left", value: "" },
-  { id: "inv_carga3", name: "Inventário: Carga 3", type: "textarea", x: 64.8, y: 72.8, w: 29.4, h: 15.6, fontSize: 13, align: "left", value: "" }
+  { id: "inv_carga1", name: "Inventário: Carga 1", type: "textarea", x: 5.8, y: 70.97, w: 47.39, h: 29.3, fontSize: 13, align: "left", value: "" },
+  { id: "inv_carga2", name: "Inventário: Carga 2", type: "textarea", x: 35.2, y: 70.97, w: 47.39, h: 29.3, fontSize: 13, align: "left", value: "" },
+  { id: "inv_carga3", name: "Inventário: Carga 3", type: "textarea", x: 64.8, y: 70.97, w: 47.39, h: 29.3, fontSize: 13, align: "left", value: "" }
 ];

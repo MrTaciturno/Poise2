@@ -2,6 +2,8 @@
 let state = {
     bgImage: "",        // Base64 or image path
     fields: [],         // Field objects
+    items: [],          // Inventory items
+    selectedItemId: null, // Selected inventory item ID
     activeMode: "play", // "play" or "edit"
     currentZoom: 100,   // Percentage
     selectedFieldId: null,
@@ -11,6 +13,22 @@ let state = {
 // Configuration
 const BASE_WIDTH = 900; // Baseline width of sheet at 100% zoom
 const GRID_SNAP_SIZE = 0.25; // Snap interval in percentages
+
+// Grid Zones Configuration for Snapping (w and h will be calculated dynamically on image load)
+const gridZones = [
+    { id: "destra", name: "Destra", x: 5.8, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_l", name: "Carga (Esquerda)", x: 23.6, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "traje", name: "Traje", x: 35.2, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_r", name: "Carga (Direita)", x: 58.8, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "sinistra", name: "Sinistra", x: 76.4, y: 52.97, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_1", name: "Carga 1", x: 5.8, y: 70.97, w: 47.39, h: 29.3, cols: 5, rows: 4 },
+    { id: "carga_2", name: "Carga 2", x: 35.2, y: 70.97, w: 47.39, h: 29.3, cols: 5, rows: 4 },
+    { id: "carga_3", name: "Carga 3", x: 64.8, y: 70.97, w: 47.39, h: 29.3, cols: 5, rows: 4 }
+];
+
+let SHEET_RATIO = 0.707; // Default aspect ratio of A4 sheet (2480 / 3508)
+let cellW = 9.48; // Base width percentage for a 1x1 grid cell (300 / 3165 * 100)
+let cellH = 7.32; // Base height percentage for a 1x1 grid cell (300 / 4096 * 100)
 
 // Drag & Resize Tracking
 let dragContext = {
@@ -23,6 +41,16 @@ let dragContext = {
     startFieldY: 0,
     startFieldW: 0,
     startFieldH: 0
+};
+
+// Item Drag Tracking
+let itemDragContext = {
+    isDragging: false,
+    itemId: null,
+    startX: 0,
+    startY: 0,
+    startItemX: 0,
+    startItemY: 0
 };
 
 // DOM References
@@ -86,7 +114,20 @@ const elements = {
     helpModal: document.getElementById("help-modal"),
     btnHelp: document.getElementById("btn-help"),
     btnCloseHelp: document.getElementById("btn-close-help"),
-    autosaveStatus: document.getElementById("autosave-status")
+    autosaveStatus: document.getElementById("autosave-status"),
+    
+    // Inventory controls & snap preview
+    itemNameInput: document.getElementById("item-name-input"),
+    itemCardSelect: document.getElementById("item-card-select"),
+    btnAddItem: document.getElementById("btn-add-item"),
+    snapPreview: document.getElementById("snap-preview"),
+    
+    // Inventory inspector controls
+    itemInspector: document.getElementById("item-inspector"),
+    inspectItemName: document.getElementById("inspect-item-name"),
+    inspectItemDetails: document.getElementById("inspect-item-details"),
+    btnDetachItem: document.getElementById("btn-detach-item"),
+    btnDeleteItem: document.getElementById("btn-delete-item")
 };
 
 // Initialize Application
@@ -104,6 +145,7 @@ function loadSession() {
             const data = JSON.parse(saved);
             state.bgImage = data.bgImage || "";
             state.fields = data.fields || [];
+            state.items = data.items || [];
             state.snapToGrid = data.snapToGrid !== undefined ? data.snapToGrid : true;
             elements.snapToggle.checked = state.snapToGrid;
             
@@ -131,6 +173,7 @@ function saveSession() {
     const data = {
         bgImage: state.bgImage,
         fields: state.fields,
+        items: state.items,
         snapToGrid: state.snapToGrid
     };
     
@@ -148,6 +191,7 @@ function showEmptyState() {
     elements.sheetImage.src = "";
     state.bgImage = "";
     state.fields = [];
+    state.items = [];
     renderFields();
 }
 
@@ -241,16 +285,102 @@ function setupEventListeners() {
     elements.dragOverlay.addEventListener("dragleave", handleDragLeave);
     elements.dragOverlay.addEventListener("drop", handleDrop);
     
-    // De-select field when clicking on the sheet wrapper background
+    // De-select field or item when clicking on the sheet wrapper background
     elements.sheetScroller.addEventListener("mousedown", (e) => {
-        if (state.activeMode !== "edit") return;
         if (e.target === elements.sheetScroller || e.target === elements.sheetContainer || e.target === elements.sheetImage || e.target === elements.fieldsOverlay) {
-            selectField(null);
+            if (state.activeMode === "edit") {
+                selectField(null);
+            }
+            selectItem(null);
         }
     });
     
     // Global Keyboard Shortcuts
     document.addEventListener("keydown", handleKeyDown);
+    
+    // Update sheet ratio when image loads
+    elements.sheetImage.addEventListener("load", () => {
+        if (elements.sheetImage.naturalWidth && elements.sheetImage.naturalHeight) {
+            SHEET_RATIO = elements.sheetImage.naturalWidth / elements.sheetImage.naturalHeight;
+            
+            // Calculate exact cell percentages based on 300x300px cells on the sheet
+            cellW = (300 / elements.sheetImage.naturalWidth) * 100;
+            cellH = (300 / elements.sheetImage.naturalHeight) * 100;
+            
+            // Update grid zones dimensions dynamically
+            gridZones.forEach(zone => {
+                zone.w = zone.cols * cellW;
+                zone.h = zone.rows * cellH;
+            });
+            
+            if (state.items && state.items.length > 0) {
+                // Re-calculate heights of items to maintain aspect ratio
+                state.items.forEach(item => {
+                    if (!item.snapped) {
+                        item.w = parseFloat((item.cols * cellW).toFixed(2));
+                        item.h = parseFloat((item.rows * cellH).toFixed(2));
+                    } else {
+                        item.w = parseFloat((item.cols * cellW).toFixed(2));
+                        item.h = parseFloat((item.rows * cellH).toFixed(2));
+                    }
+                });
+                renderInventoryItems();
+            }
+        }
+    });
+    
+    // Add Item click
+    elements.btnAddItem.addEventListener("click", () => {
+        const name = elements.itemNameInput.value.trim() || "Item";
+        
+        // Parse select value: "imageName|cols|rows"
+        const selectVal = elements.itemCardSelect.value;
+        const [imageName, colsStr, rowsStr] = selectVal.split('|');
+        const cols = parseInt(colsStr) || 1;
+        const rows = parseInt(rowsStr) || 1;
+        
+        spawnInventoryItem(name, cols, rows, imageName);
+        elements.itemNameInput.value = "";
+    });
+    
+    // Inspector events
+    elements.inspectItemName.addEventListener("input", (e) => {
+        if (!state.selectedItemId) return;
+        const item = state.items.find(it => it.id === state.selectedItemId);
+        if (item) {
+            item.name = e.target.value;
+            const cardEl = document.querySelector(`.inventory-card[data-id="${item.id}"]`);
+            if (cardEl) {
+                const label = cardEl.querySelector(".card-label");
+                if (label) label.textContent = item.name;
+            }
+            saveSession();
+        }
+    });
+    
+    elements.btnDetachItem.addEventListener("click", () => {
+        if (!state.selectedItemId) return;
+        const item = state.items.find(it => it.id === state.selectedItemId);
+        if (item && item.snapped) {
+            item.snapped = false;
+            item.zoneId = null;
+            // Shift position slightly so it's not directly on top of the grid
+            item.y = Math.max(2, item.y - 10); 
+            // Revert size keeping aspect ratio
+            item.w = parseFloat((item.cols * cellW).toFixed(2));
+            item.h = parseFloat((item.rows * cellH).toFixed(2));
+            
+            selectItem(item.id);
+            renderInventoryItems();
+            saveSession();
+        }
+    });
+    
+    elements.btnDeleteItem.addEventListener("click", () => {
+        if (!state.selectedItemId) return;
+        deleteInventoryItem(state.selectedItemId);
+        selectItem(null);
+    });
 }
 
 // Switch Mode (Play vs Edit)
@@ -332,6 +462,7 @@ function loadPoiseFileContent(file) {
             }
             
             state.fields = data.fields || [];
+            state.items = data.items || [];
             selectField(null);
             renderFields();
             saveSession();
@@ -396,7 +527,7 @@ function handleDrop(e) {
 
 // Clear all player input values
 function clearValues() {
-    if (!confirm("Tem certeza que deseja apagar todos os preenchimentos? Os campos de digitação continuarão existindo, mas vazios.")) {
+    if (!confirm("Tem certeza que deseja apagar todos os preenchimentos e itens da mochila? Os campos de digitação e itens serão resetados.")) {
         return;
     }
     state.fields.forEach(field => {
@@ -408,6 +539,7 @@ function clearValues() {
             field.value = "";
         }
     });
+    state.items = [];
     renderFields();
     saveSession();
 }
@@ -440,6 +572,19 @@ function updateZoom() {
             }
         }
     });
+    
+    // Scale existing inventory card font sizes dynamically
+    if (state.items) {
+        state.items.forEach(item => {
+            const el = document.querySelector(`.inventory-card[data-id="${item.id}"]`);
+            if (el) {
+                const textarea = el.querySelector("textarea");
+                if (textarea) {
+                    textarea.style.fontSize = `${13 * (state.currentZoom / 100)}px`;
+                }
+            }
+        });
+    }
 }
 
 // Render Fields Overlay
@@ -565,6 +710,9 @@ function renderFields() {
         
         elements.fieldsOverlay.appendChild(fieldEl);
     });
+    
+    // Render inventory cards
+    renderInventoryItems();
 }
 
 // Select a Field in Designer Mode
@@ -909,7 +1057,8 @@ function exportPoiseFile() {
     
     const data = {
         bgImage: state.bgImage,
-        fields: state.fields
+        fields: state.fields,
+        items: state.items
     };
     
     const jsonString = JSON.stringify(data, null, 2);
@@ -933,4 +1082,287 @@ function exportPoiseFile() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+// ==========================================
+// GRID INVENTORY SYSTEM (CARGA)
+// ==========================================
+
+function spawnInventoryItem(name, cols, rows, imageName) {
+    if (!state.bgImage) {
+        alert("Carregue uma planilha antes de adicionar itens.");
+        return;
+    }
+    
+    const id = "item_" + Date.now();
+    
+    // Default size when floating (not snapped)
+    const w = cols * cellW;
+    const h = rows * cellH;
+    
+    // Spawn in the middle of viewport scroll
+    const scrollLeft = elements.sheetScroller.scrollLeft;
+    const scrollTop = elements.sheetScroller.scrollTop;
+    const containerRect = elements.sheetContainer.getBoundingClientRect();
+    const viewportRect = elements.canvasViewport.getBoundingClientRect();
+    
+    const centerX_px = (viewportRect.width / 2) + scrollLeft - (containerRect.width * (w / 100) / 2);
+    const centerY_px = (viewportRect.height / 2) + scrollTop - (containerRect.height * (h / 100) / 2);
+    
+    let x = (centerX_px / containerRect.width) * 100;
+    let y = (centerY_px / containerRect.height) * 100;
+    
+    x = Math.max(2, Math.min(98 - w, x));
+    y = Math.max(2, Math.min(98 - h, y));
+    
+    const newItem = {
+        id,
+        name,
+        cols,
+        rows,
+        imageName,
+        x: parseFloat(x.toFixed(2)),
+        y: parseFloat(y.toFixed(2)),
+        w: parseFloat(w.toFixed(2)),
+        h: parseFloat(h.toFixed(2)),
+        snapped: false,
+        zoneId: null,
+        col: 0,
+        row: 0
+    };
+    
+    state.items.push(newItem);
+    renderInventoryItems();
+    selectItem(id);
+    saveSession();
+}
+
+function renderInventoryItems() {
+    // Remove existing inventory cards
+    document.querySelectorAll(".inventory-card").forEach(el => el.remove());
+    
+    state.items.forEach(item => {
+        const cardEl = document.createElement("div");
+        cardEl.className = "inventory-card";
+        cardEl.setAttribute("data-id", item.id);
+        
+        if (state.selectedItemId === item.id) {
+            cardEl.classList.add("selected");
+        }
+        
+        const imageName = item.imageName || `IC${item.cols}x${item.rows}`;
+        cardEl.style.backgroundImage = `url('PoiseBlankIC/${imageName}.png')`;
+        cardEl.style.left = `${item.x}%`;
+        cardEl.style.top = `${item.y}%`;
+        cardEl.style.width = `${item.w}%`;
+        cardEl.style.height = `${item.h}%`;
+        
+        // Plain label instead of textarea to avoid click blocking
+        const label = document.createElement("div");
+        label.className = "card-label";
+        label.textContent = item.name || "";
+        label.style.fontSize = `${13 * (state.currentZoom / 100)}px`;
+        
+        // Delete button
+        const delBtn = document.createElement("button");
+        delBtn.className = "delete-card-btn";
+        delBtn.innerHTML = "&times;";
+        delBtn.title = "Remover Item";
+        delBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            deleteInventoryItem(item.id);
+            if (state.selectedItemId === item.id) {
+                selectItem(null);
+            }
+        });
+        
+        cardEl.appendChild(label);
+        cardEl.appendChild(delBtn);
+        
+        // Drag listener
+        cardEl.addEventListener("mousedown", (e) => handleItemMouseDown(e, item.id));
+        
+        elements.fieldsOverlay.appendChild(cardEl);
+    });
+}
+
+function deleteInventoryItem(id) {
+    state.items = state.items.filter(item => item.id !== id);
+    renderInventoryItems();
+    saveSession();
+}
+
+function selectItem(itemId) {
+    state.selectedItemId = itemId;
+    
+    document.querySelectorAll(".inventory-card").forEach(el => {
+        el.classList.toggle("selected", el.getAttribute("data-id") === itemId);
+    });
+    
+    if (itemId) {
+        const item = state.items.find(it => it.id === itemId);
+        if (item) {
+            elements.itemInspector.classList.remove("hidden");
+            elements.inspectItemName.value = item.name || "";
+            elements.inspectItemDetails.textContent = `Tamanho: ${item.cols}x${item.rows} | Status: ${item.snapped ? 'Acoplado (' + item.zoneId + ')' : 'Flutuante'}`;
+            elements.inspectItemName.focus();
+        }
+    } else {
+        elements.itemInspector.classList.add("hidden");
+    }
+}
+
+// Drag & Snapping for Item Cards
+function handleItemMouseDown(e, itemId) {
+    // Do not drag if clicking delete button
+    if (e.target.classList.contains("delete-card-btn")) {
+        return;
+    }
+    
+    e.preventDefault();
+    selectItem(itemId);
+    
+    const item = state.items.find(it => it.id === itemId);
+    if (!item) return;
+    
+    itemDragContext.isDragging = true;
+    itemDragContext.itemId = itemId;
+    itemDragContext.startX = e.clientX;
+    itemDragContext.startY = e.clientY;
+    itemDragContext.startItemX = item.x;
+    itemDragContext.startItemY = item.y;
+    
+    const cardEl = document.querySelector(`.inventory-card[data-id="${itemId}"]`);
+    if (cardEl) cardEl.classList.add("dragging");
+    
+    document.addEventListener("mousemove", handleItemMouseMove);
+    document.addEventListener("mouseup", handleItemMouseUp);
+}
+
+// Track temporary snapping during drag
+let currentSnap = null;
+
+function handleItemMouseMove(e) {
+    if (!itemDragContext.isDragging) return;
+    
+    const item = state.items.find(it => it.id === itemDragContext.itemId);
+    if (!item) return;
+    
+    const containerW = elements.sheetContainer.offsetWidth;
+    const containerH = elements.sheetContainer.offsetHeight;
+    
+    // Pixel differences
+    const dx_px = e.clientX - itemDragContext.startX;
+    const dy_px = e.clientY - itemDragContext.startY;
+    
+    // Percentage differences
+    const dx_pct = (dx_px / containerW) * 100;
+    const dy_pct = (dy_px / containerH) * 100;
+    
+    // Update raw position
+    item.x = parseFloat((itemDragContext.startItemX + dx_pct).toFixed(2));
+    item.y = parseFloat((itemDragContext.startItemY + dy_pct).toFixed(2));
+    
+    const cardEl = document.querySelector(`.inventory-card[data-id="${item.id}"]`);
+    if (cardEl) {
+        cardEl.style.left = `${item.x}%`;
+        cardEl.style.top = `${item.y}%`;
+    }
+    
+    // Check snapping bounds (using center of card)
+    const centerX = item.x + (item.w / 2);
+    const centerY = item.y + (item.h / 2);
+    
+    let foundZone = null;
+    
+    for (const zone of gridZones) {
+        if (centerX >= zone.x && centerX <= (zone.x + zone.w) &&
+            centerY >= zone.y && centerY <= (zone.y + zone.h)) {
+            foundZone = zone;
+            break;
+        }
+    }
+    
+    if (foundZone) {
+        // Calculate cell sizes
+        const cellW = foundZone.w / foundZone.cols;
+        const cellH = foundZone.h / foundZone.rows;
+        
+        // Find row & col indices relative to zone
+        const relX = centerX - foundZone.x;
+        const relY = centerY - foundZone.y;
+        
+        let col = Math.floor(relX / cellW) - Math.floor(item.cols / 2);
+        let row = Math.floor(relY / cellH) - Math.floor(item.rows / 2);
+        
+        // Clamp bounds inside zone
+        col = Math.max(0, Math.min(foundZone.cols - item.cols, col));
+        row = Math.max(0, Math.min(foundZone.rows - item.rows, row));
+        
+        // Calculate final snap percentages
+        const snapX = foundZone.x + col * cellW;
+        const snapY = foundZone.y + row * cellH;
+        const snapW = item.cols * cellW;
+        const snapH = snapW * SHEET_RATIO * (item.rows / item.cols); // Keep aspect ratio!
+        
+        currentSnap = {
+            zoneId: foundZone.id,
+            col,
+            row,
+            x: parseFloat(snapX.toFixed(2)),
+            y: parseFloat(snapY.toFixed(2)),
+            w: parseFloat(snapW.toFixed(2)),
+            h: parseFloat(snapH.toFixed(2))
+        };
+        
+        // Render snap preview
+        elements.snapPreview.style.left = `${currentSnap.x}%`;
+        elements.snapPreview.style.top = `${currentSnap.y}%`;
+        elements.snapPreview.style.width = `${currentSnap.w}%`;
+        elements.snapPreview.style.height = `${currentSnap.h}%`;
+        elements.snapPreview.classList.remove("hidden");
+    } else {
+        currentSnap = null;
+        elements.snapPreview.classList.add("hidden");
+    }
+}
+
+function handleItemMouseUp() {
+    if (!itemDragContext.isDragging) return;
+    
+    const item = state.items.find(it => it.id === itemDragContext.itemId);
+    const cardEl = document.querySelector(`.inventory-card[data-id="${itemDragContext.itemId}"]`);
+    
+    if (cardEl) cardEl.classList.remove("dragging");
+    
+    if (item) {
+        if (currentSnap) {
+            item.snapped = true;
+            item.zoneId = currentSnap.zoneId;
+            item.col = currentSnap.col;
+            item.row = currentSnap.row;
+            item.x = currentSnap.x;
+            item.y = currentSnap.y;
+            item.w = currentSnap.w;
+            item.h = currentSnap.h;
+        } else {
+            item.snapped = false;
+            item.zoneId = null;
+            // Revert size keeping aspect ratio
+            item.w = parseFloat((item.cols * cellW).toFixed(2));
+            item.h = parseFloat((item.rows * cellH).toFixed(2));
+        }
+        
+        saveSession();
+    }
+    
+    currentSnap = null;
+    elements.snapPreview.classList.add("hidden");
+    itemDragContext.isDragging = false;
+    itemDragContext.itemId = null;
+    
+    document.removeEventListener("mousemove", handleItemMouseMove);
+    document.removeEventListener("mouseup", handleItemMouseUp);
+    
+    renderInventoryItems();
 }

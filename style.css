@@ -890,6 +890,136 @@ body.mode-edit .sheet-field.selected .resize-handle {
     display: none !important;
 }
 
+/* Item Card Size Selector Grid */
+.item-size-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.3rem;
+    margin-top: 0.25rem;
+}
+
+.size-btn {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--color-text-muted);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    text-align: center;
+}
+
+.size-btn:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: var(--color-text);
+}
+
+.size-btn.active {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue-hover);
+    color: white;
+    box-shadow: 0 2px 8px rgba(63, 96, 168, 0.4);
+}
+
+/* Inventory Cards on Sheet */
+.inventory-card {
+    position: absolute;
+    z-index: 20;
+    cursor: grab;
+    user-select: none;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: auto; /* Re-enable pointer events since parent overlay blocks them */
+}
+
+.inventory-card.dragging {
+    cursor: grabbing;
+    z-index: 1000;
+    opacity: 0.95;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    transform: scale(1.02);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.inventory-card.selected {
+    outline: 2px solid var(--accent-gold);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+}
+
+.inventory-card .card-label {
+    position: absolute;
+    top: 12%;
+    left: 12%;
+    width: 76%;
+    height: 76%;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    overflow: hidden;
+    color: var(--ink-color);
+    font-family: 'Kalam', 'Caveat', cursive;
+    font-weight: bold;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.25;
+    padding: 2px;
+    pointer-events: none; /* Make click pass through to card for dragging */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-break: break-word;
+}
+
+/* Delete button on hover */
+.delete-card-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    background-color: var(--danger-red);
+    color: white;
+    border-radius: 50%;
+    border: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    z-index: 30;
+}
+
+.delete-card-btn:hover {
+    background-color: var(--danger-red-hover);
+    transform: scale(1.1);
+}
+
+.inventory-card:hover .delete-card-btn {
+    display: flex;
+}
+
+/* Snap Preview Box */
+.snap-preview {
+    position: absolute;
+    border: 2px dashed var(--accent-gold);
+    background-color: rgba(212, 175, 55, 0.15);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    pointer-events: none;
+    z-index: 10;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
 /* CSS PRINT MEDIA STYLES - CRITICAL FOR PDF EXPORT */
 @media print {
     @page {
@@ -959,5 +1089,20 @@ body.mode-edit .sheet-field.selected .resize-handle {
     
     .field-label-tag, .resize-handle {
         display: none !important;
+    }
+    
+    .delete-card-btn,
+    .snap-preview {
+        display: none !important;
+    }
+    
+    .inventory-card {
+        box-shadow: none !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+    
+    .inventory-card .card-label {
+        color: #000 !important;
     }
 }
