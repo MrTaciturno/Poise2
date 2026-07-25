@@ -127,7 +127,12 @@ const elements = {
     inspectItemName: document.getElementById("inspect-item-name"),
     inspectItemDetails: document.getElementById("inspect-item-details"),
     btnDetachItem: document.getElementById("btn-detach-item"),
-    btnDeleteItem: document.getElementById("btn-delete-item")
+    btnDeleteItem: document.getElementById("btn-delete-item"),
+    
+    // Mobile sidebar toggle controls
+    sidebarToggle: document.getElementById("sidebar-toggle"),
+    sidebarOverlay: document.getElementById("sidebar-overlay"),
+    sidebar: document.querySelector(".sidebar")
 };
 
 // Initialize Application
@@ -381,6 +386,37 @@ function setupEventListeners() {
         deleteInventoryItem(state.selectedItemId);
         selectItem(null);
     });
+    
+    // Collapsible Mobile Sidebar Toggle Listeners
+    if (elements.sidebarToggle && elements.sidebarOverlay && elements.sidebar) {
+        elements.sidebarToggle.addEventListener("click", () => {
+            elements.sidebar.classList.toggle("active");
+            elements.sidebarOverlay.classList.toggle("active");
+        });
+        
+        elements.sidebarOverlay.addEventListener("click", () => {
+            elements.sidebar.classList.remove("active");
+            elements.sidebarOverlay.classList.remove("active");
+        });
+        
+        // Auto-close sidebar on mobile when changing modes or actions to improve UX flow
+        const closeButtons = [
+            elements.btnPlayMode,
+            elements.btnEditMode,
+            elements.btnLoadPoise,
+            elements.btnSavePoise,
+            elements.btnPrintPdf,
+            elements.btnClearValues
+        ];
+        closeButtons.forEach(btn => {
+            if (btn) {
+                btn.addEventListener("click", () => {
+                    elements.sidebar.classList.remove("active");
+                    elements.sidebarOverlay.classList.remove("active");
+                });
+            }
+        });
+    }
 }
 
 // Switch Mode (Play vs Edit)
