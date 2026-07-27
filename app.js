@@ -18,7 +18,7 @@ const GRID_SNAP_SIZE = 0.25; // Snap interval in percentages
 const gridZones = [
     { id: "destra", name: "Destra", x: 5.8, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
     { id: "carga_l", name: "Carga (Esquerda)", x: 23.6, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "traje", name: "Traje", x: 35.2, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "traje", name: "Traje", x: 41.0, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
     { id: "carga_r", name: "Carga (Direita)", x: 58.8, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
     { id: "sinistra", name: "Sinistra", x: 76.4, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
     { id: "carga_1", name: "Carga 1", x: 5.8, y: 72.54, w: 47.39, h: 29.3, cols: 5, rows: 4 },
@@ -62,11 +62,11 @@ const elements = {
     emptyState: document.getElementById("empty-state"),
     canvasViewport: document.getElementById("canvas-viewport"),
     sheetScroller: document.getElementById("sheet-scroller"),
-    
+
     // Mode switcher buttons
     btnPlayMode: document.getElementById("btn-play-mode"),
     btnEditMode: document.getElementById("btn-edit-mode"),
-    
+
     // File inputs & buttons
     btnLoadPoise: document.getElementById("btn-load-poise"),
     btnSavePoise: document.getElementById("btn-save-poise"),
@@ -75,11 +75,11 @@ const elements = {
     btnUploadPng: document.getElementById("btn-upload-png"),
     filePngInput: document.getElementById("file-png-input"),
     filePoiseInput: document.getElementById("file-poise-input"),
-    
+
     // Empty state CTA buttons
     btnEmptyUpload: document.getElementById("btn-empty-upload"),
     btnEmptyLoadFile: document.getElementById("btn-empty-load-file"),
-    
+
     // Designer controls
     editorControls: document.getElementById("editor-controls"),
     btnAddText: document.getElementById("btn-add-text"),
@@ -87,7 +87,7 @@ const elements = {
     btnAddCheckbox: document.getElementById("btn-add-checkbox"),
     btnAddBubbleGroup: document.getElementById("btn-add-bubblegroup"),
     snapToggle: document.getElementById("snap-toggle"),
-    
+
     // Properties inspector
     propertiesPanel: document.getElementById("properties-panel"),
     propName: document.getElementById("prop-name"),
@@ -101,27 +101,27 @@ const elements = {
     propW: document.getElementById("prop-w"),
     propH: document.getElementById("prop-h"),
     btnDeleteField: document.getElementById("btn-delete-field"),
-    
+
     // Zoom controls
     btnZoomIn: document.getElementById("btn-zoom-in"),
     btnZoomOut: document.getElementById("btn-zoom-out"),
     btnZoomFit: document.getElementById("btn-zoom-fit"),
     btnZoomActual: document.getElementById("btn-zoom-actual"),
     zoomIndicator: document.getElementById("zoom-indicator"),
-    
+
     // Overlays & Modal
     dragOverlay: document.getElementById("drag-overlay"),
     helpModal: document.getElementById("help-modal"),
     btnHelp: document.getElementById("btn-help"),
     btnCloseHelp: document.getElementById("btn-close-help"),
     autosaveStatus: document.getElementById("autosave-status"),
-    
+
     // Inventory controls & snap preview
     itemNameInput: document.getElementById("item-name-input"),
     itemCardSelect: document.getElementById("item-card-select"),
     btnAddItem: document.getElementById("btn-add-item"),
     snapPreview: document.getElementById("snap-preview"),
-    
+
     // Inventory inspector controls
     itemInspector: document.getElementById("item-inspector"),
     inspectItemName: document.getElementById("inspect-item-name"),
@@ -129,7 +129,7 @@ const elements = {
     inspectItemDetails: document.getElementById("inspect-item-details"),
     btnDetachItem: document.getElementById("btn-detach-item"),
     btnDeleteItem: document.getElementById("btn-delete-item"),
-    
+
     // Mobile sidebar toggle controls
     sidebarToggle: document.getElementById("sidebar-toggle"),
     sidebarOverlay: document.getElementById("sidebar-overlay"),
@@ -154,7 +154,7 @@ function loadSession() {
             state.items = data.items || [];
             state.snapToGrid = data.snapToGrid !== undefined ? data.snapToGrid : true;
             elements.snapToggle.checked = state.snapToGrid;
-            
+
             if (state.bgImage) {
                 elements.sheetImage.src = state.bgImage;
                 elements.emptyState.classList.add("hidden");
@@ -175,16 +175,16 @@ function loadSession() {
 function saveSession() {
     elements.autosaveStatus.textContent = "Salvando...";
     elements.autosaveStatus.classList.add("saving");
-    
+
     const data = {
         bgImage: state.bgImage,
         fields: state.fields,
         items: state.items,
         snapToGrid: state.snapToGrid
     };
-    
+
     localStorage.setItem("poise_sheet_save", JSON.stringify(data));
-    
+
     setTimeout(() => {
         elements.autosaveStatus.textContent = "Salvo localmente";
         elements.autosaveStatus.classList.remove("saving");
@@ -206,39 +206,39 @@ function setupEventListeners() {
     // Mode Swapping
     elements.btnPlayMode.addEventListener("click", () => setMode("play"));
     elements.btnEditMode.addEventListener("click", () => setMode("edit"));
-    
+
     // Empty state triggers
     elements.btnEmptyUpload.addEventListener("click", () => elements.filePngInput.click());
     elements.btnEmptyLoadFile.addEventListener("click", () => elements.filePoiseInput.click());
-    
+
     // Sidebar sheet control actions
     elements.btnUploadPng.addEventListener("click", () => elements.filePngInput.click());
     elements.btnLoadPoise.addEventListener("click", () => elements.filePoiseInput.click());
     elements.btnSavePoise.addEventListener("click", exportPoiseFile);
     elements.btnPrintPdf.addEventListener("click", () => window.print());
     elements.btnClearValues.addEventListener("click", clearValues);
-    
+
     // File inputs changes
     elements.filePngInput.addEventListener("change", handlePngUpload);
     elements.filePoiseInput.addEventListener("change", handlePoiseUpload);
-    
+
     // Zoom triggers
     elements.btnZoomIn.addEventListener("click", () => adjustZoom(10));
     elements.btnZoomOut.addEventListener("click", () => adjustZoom(-10));
     elements.btnZoomFit.addEventListener("click", zoomToFit);
     elements.btnZoomActual.addEventListener("click", () => { state.currentZoom = 100; updateZoom(); });
-    
+
     // Designer field creators
     elements.btnAddText.addEventListener("click", () => addField("text"));
     elements.btnAddTextarea.addEventListener("click", () => addField("textarea"));
     elements.btnAddCheckbox.addEventListener("click", () => addField("checkbox"));
     elements.btnAddBubbleGroup.addEventListener("click", () => addField("bubble-group"));
-    
+
     elements.snapToggle.addEventListener("change", (e) => {
         state.snapToGrid = e.target.checked;
         saveSession();
     });
-    
+
     // Properties inspector changes
     elements.propName.addEventListener("input", updateSelectedFieldProperty);
     elements.propType.addEventListener("change", (e) => {
@@ -253,7 +253,7 @@ function setupEventListeners() {
     elements.propBubbleCount.addEventListener("input", updateSelectedFieldProperty);
     elements.propFontSize.addEventListener("input", updateSelectedFieldProperty);
     elements.propAlign.addEventListener("change", updateSelectedFieldProperty);
-    
+
     // Coordinate input adjustments in designer panel
     const coordInputs = [elements.propX, elements.propY, elements.propW, elements.propH];
     coordInputs.forEach(input => {
@@ -261,12 +261,12 @@ function setupEventListeners() {
             if (!state.selectedFieldId) return;
             const field = state.fields.find(f => f.id === state.selectedFieldId);
             if (!field) return;
-            
+
             field.x = parseFloat(elements.propX.value) || 0;
             field.y = parseFloat(elements.propY.value) || 0;
             field.w = parseFloat(elements.propW.value) || 1;
             field.h = parseFloat(elements.propH.value) || 1;
-            
+
             // Re-render only position styles for performance
             const el = document.querySelector(`.sheet-field[data-id="${field.id}"]`);
             if (el) {
@@ -278,19 +278,19 @@ function setupEventListeners() {
             saveSession();
         });
     });
-    
+
     elements.btnDeleteField.addEventListener("click", deleteSelectedField);
-    
+
     // Help modal triggers
     elements.btnHelp.addEventListener("click", () => elements.helpModal.classList.remove("hidden"));
     elements.btnCloseHelp.addEventListener("click", () => elements.helpModal.classList.add("hidden"));
-    
+
     // Drag & Drop onto viewport
     window.addEventListener("dragenter", handleDragEnter);
     elements.dragOverlay.addEventListener("dragover", handleDragOver);
     elements.dragOverlay.addEventListener("dragleave", handleDragLeave);
     elements.dragOverlay.addEventListener("drop", handleDrop);
-    
+
     // De-select field or item when clicking on the sheet wrapper background
     elements.sheetScroller.addEventListener("mousedown", (e) => {
         if (e.target === elements.sheetScroller || e.target === elements.sheetContainer || e.target === elements.sheetImage || e.target === elements.fieldsOverlay) {
@@ -300,25 +300,25 @@ function setupEventListeners() {
             selectItem(null);
         }
     });
-    
+
     // Global Keyboard Shortcuts
     document.addEventListener("keydown", handleKeyDown);
-    
+
     // Update sheet ratio when image loads
     elements.sheetImage.addEventListener("load", () => {
         if (elements.sheetImage.naturalWidth && elements.sheetImage.naturalHeight) {
             SHEET_RATIO = elements.sheetImage.naturalWidth / elements.sheetImage.naturalHeight;
-            
+
             // Calculate exact cell percentages based on 300x300px cells on the sheet
             cellW = (300 / elements.sheetImage.naturalWidth) * 100;
             cellH = (300 / elements.sheetImage.naturalHeight) * 100;
-            
+
             // Update grid zones dimensions dynamically
             gridZones.forEach(zone => {
                 zone.w = zone.cols * cellW;
                 zone.h = zone.rows * cellH;
             });
-            
+
             if (state.items && state.items.length > 0) {
                 // Re-calculate heights of items to maintain aspect ratio
                 state.items.forEach(item => {
@@ -334,21 +334,21 @@ function setupEventListeners() {
             }
         }
     });
-    
+
     // Add Item click
     elements.btnAddItem.addEventListener("click", () => {
         const name = elements.itemNameInput.value.trim() || "Item";
-        
+
         // Parse select value: "imageName|cols|rows"
         const selectVal = elements.itemCardSelect.value;
         const [imageName, colsStr, rowsStr] = selectVal.split('|');
         const cols = parseInt(colsStr) || 1;
         const rows = parseInt(rowsStr) || 1;
-        
+
         spawnInventoryItem(name, cols, rows, imageName);
         elements.itemNameInput.value = "";
     });
-    
+
     // Inspector events
     elements.inspectItemName.addEventListener("input", (e) => {
         if (!state.selectedItemId) return;
@@ -363,7 +363,7 @@ function setupEventListeners() {
             saveSession();
         }
     });
-    
+
     elements.inspectItemDesc.addEventListener("input", (e) => {
         if (!state.selectedItemId) return;
         const item = state.items.find(it => it.id === state.selectedItemId);
@@ -377,7 +377,7 @@ function setupEventListeners() {
             saveSession();
         }
     });
-    
+
     elements.btnDetachItem.addEventListener("click", () => {
         if (!state.selectedItemId) return;
         const item = state.items.find(it => it.id === state.selectedItemId);
@@ -385,35 +385,35 @@ function setupEventListeners() {
             item.snapped = false;
             item.zoneId = null;
             // Shift position slightly so it's not directly on top of the grid
-            item.y = Math.max(2, item.y - 10); 
+            item.y = Math.max(2, item.y - 10);
             // Revert size keeping aspect ratio
             item.w = parseFloat((item.cols * cellW).toFixed(2));
             item.h = parseFloat((item.rows * cellH).toFixed(2));
-            
+
             selectItem(item.id);
             renderInventoryItems();
             saveSession();
         }
     });
-    
+
     elements.btnDeleteItem.addEventListener("click", () => {
         if (!state.selectedItemId) return;
         deleteInventoryItem(state.selectedItemId);
         selectItem(null);
     });
-    
+
     // Collapsible Mobile Sidebar Toggle Listeners
     if (elements.sidebarToggle && elements.sidebarOverlay && elements.sidebar) {
         elements.sidebarToggle.addEventListener("click", () => {
             elements.sidebar.classList.toggle("active");
             elements.sidebarOverlay.classList.toggle("active");
         });
-        
+
         elements.sidebarOverlay.addEventListener("click", () => {
             elements.sidebar.classList.remove("active");
             elements.sidebarOverlay.classList.remove("active");
         });
-        
+
         // Auto-close sidebar on mobile when changing modes or actions to improve UX flow
         const closeButtons = [
             elements.btnPlayMode,
@@ -438,7 +438,7 @@ function setupEventListeners() {
 function setMode(mode) {
     state.activeMode = mode;
     document.body.className = `mode-${mode}`;
-    
+
     if (mode === "play") {
         elements.btnPlayMode.classList.add("active");
         elements.btnEditMode.classList.remove("active");
@@ -449,13 +449,13 @@ function setMode(mode) {
         elements.btnPlayMode.classList.remove("active");
         elements.btnEditMode.classList.add("active");
         elements.editorControls.classList.remove("hidden");
-        
+
         // Show properties if a field is selected
         if (state.selectedFieldId) {
             elements.propertiesPanel.classList.remove("hidden");
         }
     }
-    
+
     renderFields();
 }
 
@@ -464,18 +464,18 @@ function setMode(mode) {
 function handlePngUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = (event) => {
         state.bgImage = event.target.result;
         elements.sheetImage.src = state.bgImage;
         elements.emptyState.classList.add("hidden");
-        
+
         let keepExisting = false;
         if (state.fields.length > 0 || state.items.length > 0) {
             keepExisting = confirm("Você deseja MANTER os campos de preenchimento e itens de inventário existentes sobre a nova imagem?");
         }
-        
+
         if (!keepExisting) {
             // Clear old fields and items, or load default template if it matches the name
             if (file.name.includes("PoiseRPG") || file.name.includes("CS") || file.name.includes("planilha")) {
@@ -491,13 +491,13 @@ function handlePngUpload(e) {
                 state.items = [];
             }
         }
-        
+
         selectField(null);
         selectItem(null);
         renderFields();
         renderInventoryItems();
         saveSession();
-        
+
         setTimeout(zoomToFit, 100);
     };
     reader.readAsDataURL(file);
@@ -523,7 +523,7 @@ function loadPoiseFileContent(file) {
                 alert("Esta ficha requer que você selecione o arquivo de imagem PNG da planilha para ser exibida.");
                 elements.filePngInput.click();
             }
-            
+
             state.fields = data.fields || [];
             state.items = data.items || [];
             selectField(null);
@@ -559,10 +559,10 @@ function handleDragLeave(e) {
 function handleDrop(e) {
     e.preventDefault();
     elements.dragOverlay.classList.remove("active");
-    
+
     const files = e.dataTransfer.files;
     if (files.length === 0) return;
-    
+
     const file = files[0];
     if (file.name.endsWith(".poise") || file.name.endsWith(".json")) {
         loadPoiseFileContent(file);
@@ -572,13 +572,13 @@ function handleDrop(e) {
             state.bgImage = event.target.result;
             elements.sheetImage.src = state.bgImage;
             elements.emptyState.classList.add("hidden");
-            
+
             if (confirm("Planilha carregada. Deseja aplicar o layout de campos padrão do Poise RPG?")) {
                 state.fields = JSON.parse(JSON.stringify(defaultTemplate));
             } else {
                 state.fields = [];
             }
-            
+
             selectField(null);
             renderFields();
             saveSession();
@@ -624,7 +624,7 @@ function updateZoom() {
     elements.zoomIndicator.textContent = `${state.currentZoom}%`;
     const newWidth = BASE_WIDTH * (state.currentZoom / 100);
     elements.sheetContainer.style.width = `${newWidth}px`;
-    
+
     // Scale existing fields font sizes dynamically
     state.fields.forEach(field => {
         const el = document.querySelector(`.sheet-field[data-id="${field.id}"]`);
@@ -635,7 +635,7 @@ function updateZoom() {
             }
         }
     });
-    
+
     // Scale existing inventory card font sizes dynamically
     if (state.items) {
         state.items.forEach(item => {
@@ -657,21 +657,21 @@ function updateZoom() {
 // Render Fields Overlay
 function renderFields() {
     elements.fieldsOverlay.innerHTML = "";
-    
+
     state.fields.forEach(field => {
         const fieldEl = document.createElement("div");
         fieldEl.className = `sheet-field field-type-${field.type}`;
         fieldEl.setAttribute("data-id", field.id);
-        
+
         // Coordinates and sizes
         fieldEl.style.left = `${field.x}%`;
         fieldEl.style.top = `${field.y}%`;
         fieldEl.style.width = `${field.w}%`;
         fieldEl.style.height = `${field.h}%`;
-        
+
         // Font configuration
         const calculatedFontSize = (field.fontSize || 14) * (state.currentZoom / 100);
-        
+
         if (state.activeMode === "play") {
             // Render actual inputs based on type
             if (field.type === "textarea") {
@@ -679,13 +679,13 @@ function renderFields() {
                 textarea.value = field.value || "";
                 textarea.style.fontSize = `${calculatedFontSize}px`;
                 textarea.style.textAlign = field.align || "left";
-                
+
                 textarea.addEventListener("input", (e) => {
                     field.value = e.target.value;
                     saveSession();
                 });
                 fieldEl.appendChild(textarea);
-                
+
             } else if (field.type === "checkbox") {
                 if (field.value) fieldEl.classList.add("checked");
                 fieldEl.addEventListener("click", () => {
@@ -697,21 +697,21 @@ function renderFields() {
                     }
                     saveSession();
                 });
-                
+
             } else if (field.type === "bubble-group") {
                 const count = field.bubblesCount || 6;
                 const vals = Array.isArray(field.value) ? field.value : Array(count).fill(false);
-                
+
                 for (let i = 0; i < count; i++) {
                     const bubble = document.createElement("div");
                     bubble.className = "bubble-item";
                     if (vals[i]) bubble.classList.add("checked");
-                    
+
                     bubble.addEventListener("click", (e) => {
                         e.stopPropagation();
                         vals[i] = !vals[i];
                         field.value = vals;
-                        
+
                         if (vals[i]) {
                             bubble.classList.add("checked");
                         } else {
@@ -721,25 +721,25 @@ function renderFields() {
                     });
                     fieldEl.appendChild(bubble);
                 }
-                
+
             } else { // text, number
                 const input = document.createElement("input");
                 input.type = field.type === "number" ? "number" : "text";
                 input.value = field.value || "";
                 input.style.fontSize = `${calculatedFontSize}px`;
                 input.style.textAlign = field.align || "left";
-                
+
                 input.addEventListener("input", (e) => {
                     field.value = e.target.value;
                     saveSession();
                 });
                 fieldEl.appendChild(input);
             }
-            
+
         } else {
             // Render designer layout (EDIT MODE)
             fieldEl.classList.toggle("selected", field.id === state.selectedFieldId);
-            
+
             // Text visual indicators in edit mode
             if (field.type === "bubble-group") {
                 const count = field.bubblesCount || 6;
@@ -759,25 +759,25 @@ function renderFields() {
                 placeholder.style.whiteSpace = field.type === "textarea" ? "normal" : "nowrap";
                 fieldEl.appendChild(placeholder);
             }
-            
+
             // Header tag
             const labelTag = document.createElement("span");
             labelTag.className = "field-label-tag";
             labelTag.textContent = field.name || field.id;
             fieldEl.appendChild(labelTag);
-            
+
             // Resize corner handle
             const resizeHandle = document.createElement("span");
             resizeHandle.className = "resize-handle";
             fieldEl.appendChild(resizeHandle);
-            
+
             // Setup mouse drag-and-drop handles
             fieldEl.addEventListener("mousedown", (e) => handleFieldMouseDown(e, field.id));
         }
-        
+
         elements.fieldsOverlay.appendChild(fieldEl);
     });
-    
+
     // Render inventory cards
     renderInventoryItems();
 }
@@ -785,12 +785,12 @@ function renderFields() {
 // Select a Field in Designer Mode
 function selectField(id) {
     state.selectedFieldId = id;
-    
+
     // Update border highlight in UI
     document.querySelectorAll(".sheet-field").forEach(el => {
         el.classList.toggle("selected", el.getAttribute("data-id") === id);
     });
-    
+
     if (id && state.activeMode === "edit") {
         const field = state.fields.find(f => f.id === id);
         if (field) {
@@ -799,12 +799,12 @@ function selectField(id) {
             elements.propType.value = field.type;
             elements.propFontSize.value = field.fontSize || 14;
             elements.propAlign.value = field.align || "left";
-            
+
             elements.propX.value = field.x.toFixed(1);
             elements.propY.value = field.y.toFixed(1);
             elements.propW.value = field.w.toFixed(1);
             elements.propH.value = field.h.toFixed(1);
-            
+
             if (field.type === "bubble-group") {
                 elements.bubbleCountRow.classList.remove("hidden");
                 elements.propBubbleCount.value = field.bubblesCount || 6;
@@ -820,31 +820,31 @@ function selectField(id) {
 // Add a New Field in Designer Mode
 function addField(type) {
     if (state.activeMode !== "edit") return;
-    
+
     const id = "field_" + Date.now();
     const scrollLeft = elements.sheetScroller.scrollLeft;
     const scrollTop = elements.sheetScroller.scrollTop;
-    
+
     // Position field near the center of the current scroll viewport
     const containerRect = elements.sheetContainer.getBoundingClientRect();
     const viewportRect = elements.canvasViewport.getBoundingClientRect();
-    
+
     // Calculate percentage coords based on viewport center relative to container
     const centerX_px = (viewportRect.width / 2) + scrollLeft - 100;
     const centerY_px = (viewportRect.height / 2) + scrollTop - 20;
-    
+
     let x = (centerX_px / containerRect.width) * 100;
     let y = (centerY_px / containerRect.height) * 100;
-    
+
     // Keep it in bounds
     x = Math.max(2, Math.min(80, x));
     y = Math.max(2, Math.min(90, y));
-    
+
     let w = 15;
     let h = 2.5;
     let name = "Novo Campo";
     let defaultValue = "";
-    
+
     if (type === "textarea") {
         w = 20;
         h = 10;
@@ -860,7 +860,7 @@ function addField(type) {
         name = "Grupo de EXP";
         defaultValue = Array(6).fill(false);
     }
-    
+
     const newField = {
         id,
         name,
@@ -874,7 +874,7 @@ function addField(type) {
         value: defaultValue,
         bubblesCount: type === "bubble-group" ? 6 : undefined
     };
-    
+
     state.fields.push(newField);
     renderFields();
     selectField(id);
@@ -886,12 +886,12 @@ function updateSelectedFieldProperty() {
     if (!state.selectedFieldId) return;
     const field = state.fields.find(f => f.id === state.selectedFieldId);
     if (!field) return;
-    
+
     field.name = elements.propName.value;
-    
+
     const oldType = field.type;
     field.type = elements.propType.value;
-    
+
     // Reset values appropriately if type is mutated
     if (oldType !== field.type) {
         if (field.type === "checkbox") {
@@ -913,7 +913,7 @@ function updateSelectedFieldProperty() {
             field.h = 2.5;
         }
     }
-    
+
     if (field.type === "bubble-group") {
         const newCount = parseInt(elements.propBubbleCount.value) || 6;
         if (field.bubblesCount !== newCount) {
@@ -921,10 +921,10 @@ function updateSelectedFieldProperty() {
             field.value = Array(newCount).fill(false);
         }
     }
-    
+
     field.fontSize = parseInt(elements.propFontSize.value) || 14;
     field.align = elements.propAlign.value;
-    
+
     renderFields();
     saveSession();
 }
@@ -941,15 +941,15 @@ function deleteSelectedField() {
 // Mouse Drag & Resize Handlers
 function handleFieldMouseDown(e, fieldId) {
     if (state.activeMode !== "edit") return;
-    
+
     e.preventDefault();
     selectField(fieldId);
-    
+
     const field = state.fields.find(f => f.id === fieldId);
     if (!field) return;
-    
+
     const isResize = e.target.classList.contains("resize-handle");
-    
+
     dragContext.isDragging = !isResize;
     dragContext.isResizing = isResize;
     dragContext.fieldId = fieldId;
@@ -959,80 +959,80 @@ function handleFieldMouseDown(e, fieldId) {
     dragContext.startFieldY = field.y;
     dragContext.startFieldW = field.w;
     dragContext.startFieldH = field.h;
-    
+
     const fieldEl = document.querySelector(`.sheet-field[data-id="${fieldId}"]`);
     if (fieldEl) fieldEl.classList.add("dragging");
-    
+
     document.addEventListener("mousemove", handleDocumentMouseMove);
     document.addEventListener("mouseup", handleDocumentMouseUp);
 }
 
 function handleDocumentMouseMove(e) {
     if (!dragContext.fieldId) return;
-    
+
     const field = state.fields.find(f => f.id === dragContext.fieldId);
     if (!field) return;
-    
+
     const containerW = elements.sheetContainer.offsetWidth;
     const containerH = elements.sheetContainer.offsetHeight;
-    
+
     // Pixel differences
     const dx_px = e.clientX - dragContext.startX;
     const dy_px = e.clientY - dragContext.startY;
-    
+
     // Percentage differences
     const dx_pct = (dx_px / containerW) * 100;
     const dy_pct = (dy_px / containerH) * 100;
-    
+
     const fieldEl = document.querySelector(`.sheet-field[data-id="${field.id}"]`);
-    
+
     if (dragContext.isDragging) {
         let newX = dragContext.startFieldX + dx_pct;
         let newY = dragContext.startFieldY + dy_pct;
-        
+
         if (state.snapToGrid) {
             newX = Math.round(newX / GRID_SNAP_SIZE) * GRID_SNAP_SIZE;
             newY = Math.round(newY / GRID_SNAP_SIZE) * GRID_SNAP_SIZE;
         }
-        
+
         // Bounds clamping
         newX = Math.max(0, Math.min(100 - field.w, newX));
         newY = Math.max(0, Math.min(100 - field.h, newY));
-        
+
         field.x = parseFloat(newX.toFixed(2));
         field.y = parseFloat(newY.toFixed(2));
-        
+
         if (fieldEl) {
             fieldEl.style.left = `${field.x}%`;
             fieldEl.style.top = `${field.y}%`;
         }
-        
+
         // Sync to sidebar inputs
         elements.propX.value = field.x.toFixed(1);
         elements.propY.value = field.y.toFixed(1);
     }
-    
+
     if (dragContext.isResizing) {
         let newW = dragContext.startFieldW + dx_pct;
         let newH = dragContext.startFieldH + dy_pct;
-        
+
         if (state.snapToGrid) {
             newW = Math.round(newW / GRID_SNAP_SIZE) * GRID_SNAP_SIZE;
             newH = Math.round(newH / GRID_SNAP_SIZE) * GRID_SNAP_SIZE;
         }
-        
+
         // Minimum size rules
         newW = Math.max(0.5, Math.min(100 - field.x, newW));
         newH = Math.max(0.5, Math.min(100 - field.y, newH));
-        
+
         field.w = parseFloat(newW.toFixed(2));
         field.h = parseFloat(newH.toFixed(2));
-        
+
         if (fieldEl) {
             fieldEl.style.width = `${field.w}%`;
             fieldEl.style.height = `${field.h}%`;
         }
-        
+
         // Sync to sidebar inputs
         elements.propW.value = field.w.toFixed(1);
         elements.propH.value = field.h.toFixed(1);
@@ -1043,16 +1043,16 @@ function handleDocumentMouseUp() {
     if (dragContext.fieldId) {
         const fieldEl = document.querySelector(`.sheet-field[data-id="${dragContext.fieldId}"]`);
         if (fieldEl) fieldEl.classList.remove("dragging");
-        
+
         saveSession();
         // Full re-render to ensure layout text wraps correctly after resize
         renderFields();
     }
-    
+
     dragContext.isDragging = false;
     dragContext.isResizing = false;
     dragContext.fieldId = null;
-    
+
     document.removeEventListener("mousemove", handleDocumentMouseMove);
     document.removeEventListener("mouseup", handleDocumentMouseUp);
 }
@@ -1063,21 +1063,21 @@ function handleKeyDown(e) {
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") {
         return;
     }
-    
+
     // Help Modal escape
     if (e.key === "Escape" && !elements.helpModal.classList.contains("hidden")) {
         elements.helpModal.classList.add("hidden");
         return;
     }
-    
+
     if (state.activeMode !== "edit") return;
-    
+
     if (state.selectedFieldId) {
         const field = state.fields.find(f => f.id === state.selectedFieldId);
         if (!field) return;
-        
+
         const step = e.shiftKey ? 1.0 : 0.1; // Hold shift for large move
-        
+
         if (e.key === "ArrowUp") {
             e.preventDefault();
             field.y = parseFloat(Math.max(0, field.y - step).toFixed(2));
@@ -1109,7 +1109,7 @@ function saveAndNudge(field) {
         el.style.left = `${field.x}%`;
         el.style.top = `${field.y}%`;
     }
-    
+
     elements.propX.value = field.x.toFixed(1);
     elements.propY.value = field.y.toFixed(1);
     saveSession();
@@ -1121,16 +1121,16 @@ function exportPoiseFile() {
         alert("Carregue uma planilha antes de salvar.");
         return;
     }
-    
+
     const data = {
         bgImage: state.bgImage,
         fields: state.fields,
         items: state.items
     };
-    
+
     const jsonString = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonString], { type: "application/json" });
-    
+
     // Find character name to define filename
     const nameField = state.fields.find(f => f.id === "nome_desc");
     let charName = "ficha_poise";
@@ -1141,11 +1141,11 @@ function exportPoiseFile() {
             charName = firstLine.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
         }
     }
-    
+
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `${charName}.poise`;
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1160,28 +1160,28 @@ function spawnInventoryItem(name, cols, rows, imageName) {
         alert("Carregue uma planilha antes de adicionar itens.");
         return;
     }
-    
+
     const id = "item_" + Date.now();
-    
+
     // Default size when floating (not snapped)
     const w = cols * cellW;
     const h = rows * cellH;
-    
+
     // Spawn in the middle of viewport scroll
     const scrollLeft = elements.sheetScroller.scrollLeft;
     const scrollTop = elements.sheetScroller.scrollTop;
     const containerRect = elements.sheetContainer.getBoundingClientRect();
     const viewportRect = elements.canvasViewport.getBoundingClientRect();
-    
+
     const centerX_px = (viewportRect.width / 2) + scrollLeft - (containerRect.width * (w / 100) / 2);
     const centerY_px = (viewportRect.height / 2) + scrollTop - (containerRect.height * (h / 100) / 2);
-    
+
     let x = (centerX_px / containerRect.width) * 100;
     let y = (centerY_px / containerRect.height) * 100;
-    
+
     x = Math.max(2, Math.min(98 - w, x));
     y = Math.max(2, Math.min(98 - h, y));
-    
+
     const newItem = {
         id,
         name,
@@ -1198,7 +1198,7 @@ function spawnInventoryItem(name, cols, rows, imageName) {
         col: 0,
         row: 0
     };
-    
+
     state.items.push(newItem);
     renderInventoryItems();
     selectItem(id);
@@ -1208,35 +1208,35 @@ function spawnInventoryItem(name, cols, rows, imageName) {
 function renderInventoryItems() {
     // Remove existing inventory cards
     document.querySelectorAll(".inventory-card").forEach(el => el.remove());
-    
+
     state.items.forEach(item => {
         const cardEl = document.createElement("div");
         cardEl.className = "inventory-card";
         cardEl.setAttribute("data-id", item.id);
-        
+
         if (state.selectedItemId === item.id) {
             cardEl.classList.add("selected");
         }
-        
+
         const imageName = item.imageName || `IC${item.cols}x${item.rows}`;
         cardEl.style.backgroundImage = `url('PoiseBlankIC/${imageName}.png')`;
         cardEl.style.left = `${item.x}%`;
         cardEl.style.top = `${item.y}%`;
         cardEl.style.width = `${item.w}%`;
         cardEl.style.height = `${item.h}%`;
-        
+
         // Plain label instead of textarea to avoid click blocking
         const label = document.createElement("div");
         label.className = "card-label";
         label.textContent = item.name || "";
         label.style.fontSize = `${13 * (state.currentZoom / 100)}px`;
-        
+
         // Description label, aligned to the left
         const descLabel = document.createElement("div");
         descLabel.className = "card-desc";
         descLabel.textContent = item.desc || "";
         descLabel.style.fontSize = `${10 * (state.currentZoom / 100)}px`;
-        
+
         // Delete button
         const delBtn = document.createElement("button");
         delBtn.className = "delete-card-btn";
@@ -1249,14 +1249,14 @@ function renderInventoryItems() {
                 selectItem(null);
             }
         });
-        
+
         cardEl.appendChild(label);
         cardEl.appendChild(descLabel);
         cardEl.appendChild(delBtn);
-        
+
         // Drag listener
         cardEl.addEventListener("mousedown", (e) => handleItemMouseDown(e, item.id));
-        
+
         elements.fieldsOverlay.appendChild(cardEl);
     });
 }
@@ -1269,11 +1269,11 @@ function deleteInventoryItem(id) {
 
 function selectItem(itemId) {
     state.selectedItemId = itemId;
-    
+
     document.querySelectorAll(".inventory-card").forEach(el => {
         el.classList.toggle("selected", el.getAttribute("data-id") === itemId);
     });
-    
+
     if (itemId) {
         const item = state.items.find(it => it.id === itemId);
         if (item) {
@@ -1294,23 +1294,23 @@ function handleItemMouseDown(e, itemId) {
     if (e.target.classList.contains("delete-card-btn")) {
         return;
     }
-    
+
     e.preventDefault();
     selectItem(itemId);
-    
+
     const item = state.items.find(it => it.id === itemId);
     if (!item) return;
-    
+
     itemDragContext.isDragging = true;
     itemDragContext.itemId = itemId;
     itemDragContext.startX = e.clientX;
     itemDragContext.startY = e.clientY;
     itemDragContext.startItemX = item.x;
     itemDragContext.startItemY = item.y;
-    
+
     const cardEl = document.querySelector(`.inventory-card[data-id="${itemId}"]`);
     if (cardEl) cardEl.classList.add("dragging");
-    
+
     document.addEventListener("mousemove", handleItemMouseMove);
     document.addEventListener("mouseup", handleItemMouseUp);
 }
@@ -1320,37 +1320,37 @@ let currentSnap = null;
 
 function handleItemMouseMove(e) {
     if (!itemDragContext.isDragging) return;
-    
+
     const item = state.items.find(it => it.id === itemDragContext.itemId);
     if (!item) return;
-    
+
     const containerW = elements.sheetContainer.offsetWidth;
     const containerH = elements.sheetContainer.offsetHeight;
-    
+
     // Pixel differences
     const dx_px = e.clientX - itemDragContext.startX;
     const dy_px = e.clientY - itemDragContext.startY;
-    
+
     // Percentage differences
     const dx_pct = (dx_px / containerW) * 100;
     const dy_pct = (dy_px / containerH) * 100;
-    
+
     // Update raw position
     item.x = parseFloat((itemDragContext.startItemX + dx_pct).toFixed(2));
     item.y = parseFloat((itemDragContext.startItemY + dy_pct).toFixed(2));
-    
+
     const cardEl = document.querySelector(`.inventory-card[data-id="${item.id}"]`);
     if (cardEl) {
         cardEl.style.left = `${item.x}%`;
         cardEl.style.top = `${item.y}%`;
     }
-    
+
     // Check snapping bounds (using center of card)
     const centerX = item.x + (item.w / 2);
     const centerY = item.y + (item.h / 2);
-    
+
     let foundZone = null;
-    
+
     for (const zone of gridZones) {
         if (centerX >= zone.x && centerX <= (zone.x + zone.w) &&
             centerY >= zone.y && centerY <= (zone.y + zone.h)) {
@@ -1358,29 +1358,29 @@ function handleItemMouseMove(e) {
             break;
         }
     }
-    
+
     if (foundZone) {
         // Calculate cell sizes
         const cellW = foundZone.w / foundZone.cols;
         const cellH = foundZone.h / foundZone.rows;
-        
+
         // Find row & col indices relative to zone
         const relX = centerX - foundZone.x;
         const relY = centerY - foundZone.y;
-        
+
         let col = Math.floor(relX / cellW) - Math.floor(item.cols / 2);
         let row = Math.floor(relY / cellH) - Math.floor(item.rows / 2);
-        
+
         // Clamp bounds inside zone
         col = Math.max(0, Math.min(foundZone.cols - item.cols, col));
         row = Math.max(0, Math.min(foundZone.rows - item.rows, row));
-        
+
         // Calculate final snap percentages
         const snapX = foundZone.x + col * cellW;
         const snapY = foundZone.y + row * cellH;
         const snapW = item.cols * cellW;
         const snapH = snapW * SHEET_RATIO * (item.rows / item.cols); // Keep aspect ratio!
-        
+
         currentSnap = {
             zoneId: foundZone.id,
             col,
@@ -1390,7 +1390,7 @@ function handleItemMouseMove(e) {
             w: parseFloat(snapW.toFixed(2)),
             h: parseFloat(snapH.toFixed(2))
         };
-        
+
         // Render snap preview
         elements.snapPreview.style.left = `${currentSnap.x}%`;
         elements.snapPreview.style.top = `${currentSnap.y}%`;
@@ -1405,12 +1405,12 @@ function handleItemMouseMove(e) {
 
 function handleItemMouseUp() {
     if (!itemDragContext.isDragging) return;
-    
+
     const item = state.items.find(it => it.id === itemDragContext.itemId);
     const cardEl = document.querySelector(`.inventory-card[data-id="${itemDragContext.itemId}"]`);
-    
+
     if (cardEl) cardEl.classList.remove("dragging");
-    
+
     if (item) {
         if (currentSnap) {
             item.snapped = true;
@@ -1428,17 +1428,17 @@ function handleItemMouseUp() {
             item.w = parseFloat((item.cols * cellW).toFixed(2));
             item.h = parseFloat((item.rows * cellH).toFixed(2));
         }
-        
+
         saveSession();
     }
-    
+
     currentSnap = null;
     elements.snapPreview.classList.add("hidden");
     itemDragContext.isDragging = false;
     itemDragContext.itemId = null;
-    
+
     document.removeEventListener("mousemove", handleItemMouseMove);
     document.removeEventListener("mouseup", handleItemMouseUp);
-    
+
     renderInventoryItems();
 }
