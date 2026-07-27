@@ -16,14 +16,14 @@ const GRID_SNAP_SIZE = 0.25; // Snap interval in percentages
 
 // Grid Zones Configuration for Snapping (w and h will be calculated dynamically on image load)
 const gridZones = [
-    { id: "destra", name: "Destra", x: 5.8, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "carga_l", name: "Carga (Esquerda)", x: 23.6, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "traje", name: "Traje", x: 35.2, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "carga_r", name: "Carga (Direita)", x: 58.8, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "sinistra", name: "Sinistra", x: 76.4, y: 53.34, w: 28.44, h: 29.3, cols: 3, rows: 4 },
-    { id: "carga_1", name: "Carga 1", x: 5.8, y: 71.34, w: 47.39, h: 29.3, cols: 5, rows: 4 },
-    { id: "carga_2", name: "Carga 2", x: 35.2, y: 71.34, w: 47.39, h: 29.3, cols: 5, rows: 4 },
-    { id: "carga_3", name: "Carga 3", x: 64.8, y: 71.34, w: 47.39, h: 29.3, cols: 5, rows: 4 }
+    { id: "destra", name: "Destra", x: 5.8, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_l", name: "Carga (Esquerda)", x: 23.6, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "traje", name: "Traje", x: 35.2, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_r", name: "Carga (Direita)", x: 58.8, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "sinistra", name: "Sinistra", x: 76.4, y: 54.5, w: 28.44, h: 29.3, cols: 3, rows: 4 },
+    { id: "carga_1", name: "Carga 1", x: 5.8, y: 72.54, w: 47.39, h: 29.3, cols: 5, rows: 4 },
+    { id: "carga_2", name: "Carga 2", x: 35.2, y: 72.54, w: 47.39, h: 29.3, cols: 5, rows: 4 },
+    { id: "carga_3", name: "Carga 3", x: 64.8, y: 72.54, w: 47.39, h: 29.3, cols: 5, rows: 4 }
 ];
 
 let SHEET_RATIO = 0.707; // Default aspect ratio of A4 sheet (2480 / 3508)
@@ -471,19 +471,31 @@ function handlePngUpload(e) {
         elements.sheetImage.src = state.bgImage;
         elements.emptyState.classList.add("hidden");
         
-        // Clear old fields since it's a new layout, or if the name matches the official sheet, prompt loading default
-        if (file.name.includes("PoiseRPG") || file.name.includes("CS") || file.name.includes("planilha")) {
-            if (confirm("Identificamos que este arquivo pode ser a planilha oficial do Poise RPG. Deseja carregar o layout de campos padrão?")) {
-                state.fields = JSON.parse(JSON.stringify(defaultTemplate));
+        let keepExisting = false;
+        if (state.fields.length > 0 || state.items.length > 0) {
+            keepExisting = confirm("Você deseja MANTER os campos de preenchimento e itens de inventário existentes sobre a nova imagem?");
+        }
+        
+        if (!keepExisting) {
+            // Clear old fields and items, or load default template if it matches the name
+            if (file.name.includes("PoiseRPG") || file.name.includes("CS") || file.name.includes("planilha")) {
+                if (confirm("Identificamos que este arquivo pode ser a planilha oficial do Poise RPG. Deseja carregar o layout de campos padrão?")) {
+                    state.fields = JSON.parse(JSON.stringify(defaultTemplate));
+                    state.items = [];
+                } else {
+                    state.fields = [];
+                    state.items = [];
+                }
             } else {
                 state.fields = [];
+                state.items = [];
             }
-        } else {
-            state.fields = [];
         }
         
         selectField(null);
+        selectItem(null);
         renderFields();
+        renderInventoryItems();
         saveSession();
         
         setTimeout(zoomToFit, 100);
