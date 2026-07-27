@@ -972,10 +972,10 @@ body.mode-edit .sheet-field.selected .resize-handle {
 
 .inventory-card .card-label {
     position: absolute;
-    top: 12%;
-    left: 12%;
-    width: 76%;
-    height: 76%;
+    top: 6%;
+    left: 10%;
+    width: 80%;
+    height: 25%;
     background: transparent !important;
     border: none !important;
     outline: none !important;
@@ -985,12 +985,36 @@ body.mode-edit .sheet-field.selected .resize-handle {
     font-weight: bold;
     text-align: center;
     font-size: 13px;
-    line-height: 1.25;
+    line-height: 1.2;
     padding: 2px;
     pointer-events: none; /* Make click pass through to card for dragging */
     display: flex;
     align-items: center;
     justify-content: center;
+    word-break: break-word;
+}
+
+.inventory-card .card-desc {
+    position: absolute;
+    top: 31%;
+    left: 12%;
+    width: 76%;
+    height: 60%;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    overflow: hidden;
+    color: var(--ink-color);
+    font-family: 'Kalam', 'Caveat', cursive;
+    font-size: 10px;
+    line-height: 1.15;
+    padding: 2px;
+    pointer-events: none; /* Make click pass through to card for dragging */
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    white-space: pre-wrap;
     word-break: break-word;
 }
 
@@ -1118,7 +1142,8 @@ body.mode-edit .sheet-field.selected .resize-handle {
         -webkit-print-color-adjust: exact;
     }
     
-    .inventory-card .card-label {
+    .inventory-card .card-label,
+    .inventory-card .card-desc {
         color: #000 !important;
     }
 }

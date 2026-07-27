@@ -363,6 +363,20 @@ function setupEventListeners() {
         }
     });
     
+    elements.inspectItemDesc.addEventListener("input", (e) => {
+        if (!state.selectedItemId) return;
+        const item = state.items.find(it => it.id === state.selectedItemId);
+        if (item) {
+            item.desc = e.target.value;
+            const cardEl = document.querySelector(`.inventory-card[data-id="${item.id}"]`);
+            if (cardEl) {
+                const descEl = cardEl.querySelector(".card-desc");
+                if (descEl) descEl.textContent = item.desc;
+            }
+            saveSession();
+        }
+    });
+    
     elements.btnDetachItem.addEventListener("click", () => {
         if (!state.selectedItemId) return;
         const item = state.items.find(it => it.id === state.selectedItemId);
@@ -614,9 +628,13 @@ function updateZoom() {
         state.items.forEach(item => {
             const el = document.querySelector(`.inventory-card[data-id="${item.id}"]`);
             if (el) {
-                const textarea = el.querySelector("textarea");
-                if (textarea) {
-                    textarea.style.fontSize = `${13 * (state.currentZoom / 100)}px`;
+                const label = el.querySelector(".card-label");
+                if (label) {
+                    label.style.fontSize = `${13 * (state.currentZoom / 100)}px`;
+                }
+                const desc = el.querySelector(".card-desc");
+                if (desc) {
+                    desc.style.fontSize = `${10 * (state.currentZoom / 100)}px`;
                 }
             }
         });
@@ -1154,6 +1172,7 @@ function spawnInventoryItem(name, cols, rows, imageName) {
     const newItem = {
         id,
         name,
+        desc: "",
         cols,
         rows,
         imageName,
@@ -1199,6 +1218,12 @@ function renderInventoryItems() {
         label.textContent = item.name || "";
         label.style.fontSize = `${13 * (state.currentZoom / 100)}px`;
         
+        // Description label, aligned to the left
+        const descLabel = document.createElement("div");
+        descLabel.className = "card-desc";
+        descLabel.textContent = item.desc || "";
+        descLabel.style.fontSize = `${10 * (state.currentZoom / 100)}px`;
+        
         // Delete button
         const delBtn = document.createElement("button");
         delBtn.className = "delete-card-btn";
@@ -1213,6 +1238,7 @@ function renderInventoryItems() {
         });
         
         cardEl.appendChild(label);
+        cardEl.appendChild(descLabel);
         cardEl.appendChild(delBtn);
         
         // Drag listener
@@ -1240,6 +1266,7 @@ function selectItem(itemId) {
         if (item) {
             elements.itemInspector.classList.remove("hidden");
             elements.inspectItemName.value = item.name || "";
+            elements.inspectItemDesc.value = item.desc || "";
             elements.inspectItemDetails.textContent = `Tamanho: ${item.cols}x${item.rows} | Status: ${item.snapped ? 'Acoplado (' + item.zoneId + ')' : 'Flutuante'}`;
             elements.inspectItemName.focus();
         }
