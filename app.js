@@ -125,6 +125,7 @@ const elements = {
     // Inventory inspector controls
     itemInspector: document.getElementById("item-inspector"),
     inspectItemName: document.getElementById("inspect-item-name"),
+    inspectItemDesc: document.getElementById("inspect-item-desc"),
     inspectItemDetails: document.getElementById("inspect-item-details"),
     btnDetachItem: document.getElementById("btn-detach-item"),
     btnDeleteItem: document.getElementById("btn-delete-item"),
